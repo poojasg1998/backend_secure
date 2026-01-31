@@ -1,0 +1,8 @@
+# Environment variables
+.env
+
+# Google / Firebase secrets
+config/google-services.json
+
+# Node modules
+node_modules/
