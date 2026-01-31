@@ -18,7 +18,7 @@
 // app.listen(PORT, () => {
 //   console.log(`Server started on port ${PORT}`);
 // });
-
+require('dotenv').config();
 const admin = require('./firebase');
 const express = require('express');
 const connectDB = require('./config/db');
