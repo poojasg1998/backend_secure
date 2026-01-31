@@ -120,7 +120,7 @@ const fcm = 'cYGIJzWoRC2g-2HqYBCSH9:APA91bGHIu5dszkiMP5fyN_RvNhUy91Z1KORariH20o9
   });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 // const PORT = process.env.PORT || 3000;
 server.listen(PORT,'0.0.0.0', () => {
   console.log('Server started on port 3000');
