@@ -31,7 +31,7 @@ const admin = require('./firebase');
 const employeeRoutes = require('./routes/employee');
 const companyRoutes = require('./routes/company');
 const fcmtokenRoutes = require('./routes/fcmtoken');
-
+const Fcmtoken = require('./models/fcm_tokens');
 const app = express();
 
 // 🔹 Connect MongoDB
@@ -77,17 +77,22 @@ socket.on('sendMessage', async (data) => {
 
     io.emit('receiveMessage', data);
 
-    // if (!process.env.TEST_FCM_TOKEN) {
-    //   console.log('⚠️ No FCM token, skipping Firebase');
-    //   return;
-    // }
+   const lastTokenDoc = await Fcmtoken
+  .findOne({}, { token: 1, _id: 0 })
+  .sort({ _id: -1 });   // latest document
 
+if (!lastTokenDoc) {
+  console.log('⚠️ No FCM token found');
+  return;
+}
+
+const registrationToken = lastTokenDoc.token;
     const payload = {
       notification: {
         title: 'New Message',
         body: message
       },
-      // token: process.env.TEST_FCM_TOKEN
+      token: registrationToken
     };
 
     await admin.messaging().send(payload);
