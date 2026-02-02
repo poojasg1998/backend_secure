@@ -47,7 +47,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 🔹 Routes
-app.use('/employees', employeeRoutes);
+app.use('/users', employeeRoutes);
 app.use('/companies', companyRoutes);
 
 // 🔹 Test route
@@ -69,15 +69,17 @@ const io = socketIO(server, {
 io.on('connection', socket => {
   console.log('✅ Client connected:', socket.id);
 
-  socket.on('sendMessage', async (data) => {
-    console.log('📩 Message received:', data);
+socket.on('sendMessage', async (data) => {
+  try {
+    const { message } = data;
 
-    const { senderId, receiverId, message } = data;
-
-    // Emit live message
     io.emit('receiveMessage', data);
 
-    // Firebase notification
+    if (!process.env.TEST_FCM_TOKEN) {
+      console.log('⚠️ No FCM token, skipping Firebase');
+      return;
+    }
+
     const payload = {
       notification: {
         title: 'New Message',
@@ -86,13 +88,15 @@ io.on('connection', socket => {
       token: process.env.TEST_FCM_TOKEN
     };
 
-    try {
-      await admin.messaging().send(payload);
-      console.log('🔥 Firebase notification sent');
-    } catch (err) {
-      console.error('❌ Firebase error:', err.message);
-    }
-  });
+    await admin.messaging().send(payload);
+    console.log('🔥 Firebase notification sent');
+
+  } catch (err) {
+    // 🚨 THIS PREVENTS SERVER CRASH
+    console.error('❌ Socket error (ignored):', err.message);
+  }
+});
+
 
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);

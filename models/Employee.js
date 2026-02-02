@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
 
-const employeeSchema = new mongoose.Schema({
-  name: String,
-  role: String,
-  experience: Number,
-  company:String
-});
-
+const employeeSchema = new mongoose.Schema(
+  {}, 
+  { collection: 'users' } // 👈 force collection
+);
 module.exports = mongoose.model('Employee', employeeSchema);
