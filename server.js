@@ -88,7 +88,7 @@ if (!lastTokenDoc) {
 
 const registrationToken = lastTokenDoc.token;
     const payload = {
-      notification: {
+      data: {
         title: 'New Message',
         body: message
       },
