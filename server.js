@@ -26,7 +26,7 @@ const socketIO = require('socket.io');
 const cors = require('cors');
 
 const connectDB = require('./config/db');
-const admin = require('./firebase');
+// const admin = require('./firebase');
 
 const employeeRoutes = require('./routes/employee');
 const companyRoutes = require('./routes/company');
