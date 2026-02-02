@@ -77,17 +77,17 @@ socket.on('sendMessage', async (data) => {
 
     io.emit('receiveMessage', data);
 
-    if (!process.env.TEST_FCM_TOKEN) {
-      console.log('⚠️ No FCM token, skipping Firebase');
-      return;
-    }
+    // if (!process.env.TEST_FCM_TOKEN) {
+    //   console.log('⚠️ No FCM token, skipping Firebase');
+    //   return;
+    // }
 
     const payload = {
       notification: {
         title: 'New Message',
         body: message
       },
-      token: process.env.TEST_FCM_TOKEN
+      // token: process.env.TEST_FCM_TOKEN
     };
 
     await admin.messaging().send(payload);
