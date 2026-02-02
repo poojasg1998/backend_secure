@@ -30,6 +30,7 @@ const admin = require('./firebase');
 
 const employeeRoutes = require('./routes/employee');
 const companyRoutes = require('./routes/company');
+const fcmtokenRoutes = require('./routes/fcmtoken');
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use(express.urlencoded({ extended: true }));
 // 🔹 Routes
 app.use('/users', employeeRoutes);
 app.use('/companies', companyRoutes);
+app.use('/FCM_Tokens', fcmtokenRoutes);
 
 // 🔹 Test route
 app.get('/', (req, res) => {
