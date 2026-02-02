@@ -30,7 +30,7 @@ const admin = require('./firebase');
 
 const employeeRoutes = require('./routes/employee');
 const companyRoutes = require('./routes/company');
-const fcmtokenRoutes = require('./routes/fcmtoken');
+const fcmtokenRoutes = require('./routes/fcm_tokens');
 
 const app = express();
 

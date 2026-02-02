@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Fcmtoken = require('../models/Fcmtoken');
+const Fcmtoken = require('../models/fcm_tokens');
 
 
 router.post('/add', async (req, res) => {
