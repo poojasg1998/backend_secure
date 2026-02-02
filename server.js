@@ -87,13 +87,17 @@ if (!lastTokenDoc) {
 }
 
 const registrationToken = lastTokenDoc.token;
-    const payload = {
-      data: {
-        title: 'New Message',
-        body: message
-      },
-      token: registrationToken
-    };
+   const payload = {
+  notification: {
+    title: 'New Message',
+    body: message
+  },
+  data: {
+    title: 'New Message',
+    body: message
+  },
+  token: registrationToken
+};
 
     await admin.messaging().send(payload);
     console.log('🔥 Firebase notification sent');
