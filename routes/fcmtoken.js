@@ -5,10 +5,21 @@ const Fcmtoken = require('../models/fcm_tokens');
 
 router.post('/add', async (req, res) => {
   try {
-    const fcmtoken = await Fcmtoken.create(req.body);
+    const { user_id, token, name } = req.body;
+
+    const fcmtoken = await Fcmtoken.findOneAndUpdate(
+      { user_id, token },        // match condition
+      { name },                  // fields to update
+      { upsert: true, new: true } // insert if not exists
+    );
+
     res.status(201).json(fcmtoken);
-    console.log('BODY:', req.body);
   } catch (error) {
+    if (error.code === 11000) {
+      // duplicate key error
+      return res.status(200).json({ message: 'Token already exists' });
+    }
+
     res.status(400).json({ error: error.message });
   }
 });
