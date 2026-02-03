@@ -3,26 +3,45 @@ const router = express.Router();
 const Fcmtoken = require('../models/fcm_tokens');
 
 
+// router.post('/add', async (req, res) => {
+//   try {
+//       const {  token, name } = req.body;
+//     const fcmtoken = await Fcmtoken.create(req.body);
+//     res.status(201).json(fcmtoken);
+//     console.log('BODY:', req.body);
+//   } catch (error) {
+//     res.status(400).json({ error: error.message });
+//   }
+// });
+
 router.post('/add', async (req, res) => {
   try {
     const { user_id, token, name } = req.body;
 
+    if (!token) {
+      return res.status(400).json({ message: 'FCM token is required' });
+    }
+
+    const updateData = {
+      token
+    };
+
+    // only add optional fields if present
+    if (user_id) updateData.user_id = user_id;
+    if (name) updateData.name = name;
+
     const fcmtoken = await Fcmtoken.findOneAndUpdate(
-      // { user_id, token },        // match condition
-      { name },                  // fields to update
-      { upsert: true, new: true } // insert if not exists
+      { token },                 // 🔑 unique filter
+      { $set: updateData },      // ✅ actual update
+      { upsert: true, new: true }
     );
 
     res.status(201).json(fcmtoken);
   } catch (error) {
-    if (error.code === 11000) {
-      // duplicate key error
-      return res.status(200).json({ message: 'Token already exists' });
-    }
-
     res.status(400).json({ error: error.message });
   }
 });
+
 
 router.get('/', async (req, res) => {
   try {
