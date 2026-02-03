@@ -90,17 +90,28 @@ socket.on('sendMessage', async (data) => {
 
     const registrationToken = lastTokenDoc.token;
 
+    // const payload = {  
+    //   data: {
+    //     title: 'New Message',
+    //     body: message
+    //   },
+    //   token: registrationToken
+    // };
+
     const payload = {
-      notification: {
-        title: 'New Message',
-        body: message
-      },
-      data: {
-        title: 'New Message',
-        body: message
-      },
-      token: registrationToken
-    };
+  android: {
+    notification: {
+      title: 'New Message',
+      body: text,
+      channelId: 'chat',
+    },
+  },
+  data: {
+    title: 'New Message',
+    body: text,
+  },
+  token,
+};
 
     await admin.messaging().send(payload);
     console.log('🔥 Firebase notification sent');
