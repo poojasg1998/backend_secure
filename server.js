@@ -75,36 +75,47 @@ socket.on('sendMessage', async (data) => {
   try {
     const { message } = data;
 
+    // Emit message to all clients
     io.emit('receiveMessage', data);
 
-   const lastTokenDoc = await Fcmtoken
-  .findOne({}, { token: 1, _id: 0 })
-  .sort({ _id: -1 });   // latest document
+    // Get latest FCM token
+    const lastTokenDoc = await Fcmtoken
+      .findOne({}, { token: 1 })
+      .sort({ _id: -1 });
 
-if (!lastTokenDoc) {
-  console.log('⚠️ No FCM token found');
-  return;
-}
+    if (!lastTokenDoc) {
+      console.log('⚠️ No FCM token found');
+      return;
+    }
 
-const registrationToken = lastTokenDoc.token;
-   const payload = {
-  notification: {
-    title: 'New Message',
-    body: message
-  },
-  data: {
-    title: 'New Message',
-    body: message
-  },
-  token: registrationToken
-};
+    const registrationToken = lastTokenDoc.token;
+
+    const payload = {
+      notification: {
+        title: 'New Message',
+        body: message
+      },
+      data: {
+        title: 'New Message',
+        body: message
+      },
+      token: registrationToken
+    };
 
     await admin.messaging().send(payload);
     console.log('🔥 Firebase notification sent');
 
   } catch (err) {
-    // 🚨 THIS PREVENTS SERVER CRASH
-    console.error('❌ Socket error (ignored):', err.message);
+    console.error('❌ Firebase error:', err.code, err.message);
+
+    // Remove invalid token
+    if (
+      err.code === 'messaging/registration-token-not-registered' ||
+      err.message.includes('NotRegistered')
+    ) {
+      await Fcmtoken.deleteOne({ token: lastTokenDoc.token });
+      console.log('🗑️ Invalid FCM token removed');
+    }
   }
 });
 
