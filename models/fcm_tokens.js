@@ -16,7 +16,7 @@ const mongoose = require('mongoose');
 const fcmtokensSchema = new mongoose.Schema(
   {
     user_id: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: 'User',
       required: true,
     },
