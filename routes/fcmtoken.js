@@ -8,7 +8,7 @@ router.post('/add', async (req, res) => {
     const { user_id, token, name } = req.body;
 
     const fcmtoken = await Fcmtoken.findOneAndUpdate(
-      { user_id, token },        // match condition
+      // { user_id, token },        // match condition
       { name },                  // fields to update
       { upsert: true, new: true } // insert if not exists
     );
