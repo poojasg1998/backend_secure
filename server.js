@@ -91,10 +91,6 @@ socket.on('sendMessage', async (data) => {
     const registrationToken = lastTokenDoc.token;
 
     const payload = {
-      notification: {
-        title: 'New Message',
-        body: message
-      },
       data: {
         title: 'New Message',
         body: message
@@ -108,17 +104,11 @@ socket.on('sendMessage', async (data) => {
   } catch (err) {
     console.error('❌ Firebase error:', err.code, err.message);
 
-    // Remove invalid token
-    if (
-      err.code === 'messaging/registration-token-not-registered' ||
-      err.message.includes('NotRegistered')
-    ) {
-      await Fcmtoken.deleteOne({ token: lastTokenDoc.token });
-      console.log('🗑️ Invalid FCM token removed');
-    }
+   if (error.code === 'messaging/registration-token-not-registered') {
+  await Fcmtoken.deleteOne({ token });
+}
   }
 });
-
 
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);
