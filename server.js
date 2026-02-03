@@ -91,10 +91,13 @@ socket.on('sendMessage', async (data) => {
     const registrationToken = lastTokenDoc.token;
 
     const payload = {
-      data: {
-        title: 'New Message',
-        body: message
-      },
+     notification: {
+    title: 'New Message',
+    body: message
+  },
+  data: {
+    chatId: '123'
+  },
       token: registrationToken
     };
 
