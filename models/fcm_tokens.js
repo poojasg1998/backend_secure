@@ -28,7 +28,8 @@ const fcmtokensSchema = new mongoose.Schema(
       type: String,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
+  { collection: 'FCM_Tokens' }
 );
 
 // 🔥 Compound unique index
