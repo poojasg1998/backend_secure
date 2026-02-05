@@ -68,29 +68,97 @@ const io = socketIO(server, {
   }
 });
 
+const users = new Map();
 io.on('connection', socket => {
   console.log('✅ Client connected:', socket.id);
 
+    socket.on('register', (userId) => {
+    users.set(userId, socket.id);
+    console.log(`👤 User ${userId} registered with socket ${socket.id}`);
+  });
+
 socket.on('sendMessage', async (data) => {
   try {
-    const { message } = data;
+     const { senderId, receiverId, message } = data;
+      console.log('📩 Message:', senderId, '→', receiverId, message);
 
-    // Emit message to all clients
-    io.emit('receiveMessage', data);
 
-    // Get latest FCM token
-    const lastTokenDoc = await Fcmtoken
-      .findOne({}, { token: 1 })
-      .sort({ _id: -1 });
+      /* ---------------- SOCKET MESSAGE ---------------- */
 
-    if (!lastTokenDoc) {
-      console.log('⚠️ No FCM token found');
-      return;
-    }
+      const receiverSocketId = users.get(receiverId);
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit('receiveMessage', {
+          senderId,
+          message
+        });
+      }
 
-    const registrationToken = lastTokenDoc.token;
 
-    // const payload = {  
+         /* ---------------- FCM NOTIFICATION ---------------- */
+
+      const tokenDocs = await Fcmtoken.find(
+        { user_id: receiverId },
+        { token: 1, _id: 0 }
+      );
+
+      if (!tokenDocs.length) {
+        console.log('⚠️ No FCM tokens for receiver:', receiverId);
+        return;
+      }
+      const tokens = tokenDocs.map(t => t.token);
+
+    const payload = {
+        notification: {
+          title: 'New Message',
+          body: message
+        },
+        data: {
+          senderId: String(senderId),
+          receiverId: String(receiverId),
+          message
+        }
+      };
+      const response = await admin.messaging().sendEachForMulticast({
+        tokens,
+        ...payload
+      });
+
+      /* ---------------- CLEAN INVALID TOKENS ---------------- */
+
+      response.responses.forEach(async (res, index) => {
+        if (!res.success) {
+          const errorCode = res.error?.code;
+          if (errorCode === 'messaging/registration-token-not-registered') {
+            await Fcmtoken.deleteOne({ token: tokens[index] });
+            console.log('🗑️ Removed invalid token');
+          }
+        }
+      });
+
+
+
+
+
+    // // Emit message to all clients
+    // io.emit('receiveMessage', data);
+
+    // // Get latest FCM token
+    // const lastTokenDoc = await Fcmtoken
+    //   .findOne({}, { token: 1 })
+    //   .sort({ _id: -1 });
+
+    // if (!lastTokenDoc) {
+    //   console.log('⚠️ No FCM token found');
+    //   return;
+    // }
+
+    // const registrationToken = lastTokenDoc.token;
+
+    // const payload = {
+    //   notification: {
+    //     title: 'New Message',
+    //     body: message
+    //   },
     //   data: {
     //     title: 'New Message',
     //     body: message
@@ -98,23 +166,9 @@ socket.on('sendMessage', async (data) => {
     //   token: registrationToken
     // };
 
-    const payload = {
-  android: {
-    notification: {
-      title: 'New Message',
-      body: text,
-      channelId: 'chat',
-    },
-  },
-  data: {
-    title: 'New Message',
-    body: text,
-  },
-  token,
-};
-
-    await admin.messaging().send(payload);
+    // await admin.messaging().send(payload);
     console.log('🔥 Firebase notification sent');
+    console.log('🔥 Notification sent to receiver');
 
   } catch (err) {
     console.error('❌ Firebase error:', err.code, err.message);
@@ -127,6 +181,15 @@ socket.on('sendMessage', async (data) => {
 
   socket.on('disconnect', () => {
     console.log('❌ Client disconnected:', socket.id);
+
+        for (const [userId, socketId] of users.entries()) {
+      if (socketId === socket.id) {
+        users.delete(userId);
+        console.log(`❌ User ${userId} disconnected`);
+        break;
+      }
+    }
+
   });
 });
 
