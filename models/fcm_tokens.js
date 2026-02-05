@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 
 const fcmtokensSchema = new mongoose.Schema(
   {
+    user_id:String,
     name: String,
     token: String
   },
